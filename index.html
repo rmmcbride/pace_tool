@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" 
+      content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pace Tool</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+</head>
+<body>
+
+    <script type="text/JavaScript">
+        function validateRepLength(val) {
+            if (val.length == 0) {
+                return false;
+            } else {
+            const pattern = /^[0-9]{1,5}\.?[0-9]{0,5}$/;
+            return pattern.test(val);
+            }
+        }
+
+        function validateRepError(repValue) {
+            repValue.setCustomValidity("The rep length must be a number greater than zero and less than 1,001 e.g. 800, 1.2");
+            repValue.reportValidity();
+        }
+
+        function validateRep() {
+            // Re-set
+            document.getElementById("final_pace").innerHTML = "";
+
+            const repValue = document.getElementById("repLength");
+            let rep =  document.getElementById("repLength").value;
+
+            if (!validateRepLength(rep)) {
+                validateRepError(repValue)
+            } 
+        }  
+
+        function convertToSeconds(paceStr) {
+            let minutes = parseInt(paceStr.substr(0, 2));
+            let seconds = parseInt(paceStr.substr(3, 5));
+            return minutes * 60 + seconds
+        }
+
+        function convertToPace(numSeconds) {
+            let seconds = Math.round(numSeconds % 60);
+            let minutes = Math.round((numSeconds - seconds) / 60);
+            return minutes + " min " + seconds + " sec"
+        }
+
+        function process() {
+            // Re-set
+            document.getElementById("final_pace").innerHTML = "";
+
+            let pace = document.getElementById("pace").value;
+            let unit = document.getElementById("unit_choice").value;
+
+            const repValue = document.getElementById("repLength");
+            let rep =  document.getElementById("repLength").value;
+            if (validateRepLength(rep)) {
+                let adjustedRep = parseFloat(rep);
+                if (unit == "metres") {
+                    adjustedRep = rep / 1000; // Express in terms of kilometres
+                }
+
+                let paceSeconds = convertToSeconds(pace);
+                let desiredPace = convertToPace(paceSeconds * adjustedRep);
+                document.getElementById("final_pace").innerHTML = "Your desired pace for " + rep + " " + unit + " is " + desiredPace;
+            } else {
+                validateRepError(repValue);
+            }
+        }
+
+    </script>
+
+    <section class="hero is-info">
+        <div class="hero-body">
+        <p class="title">
+            Pacer
+        </p>
+        <p class="subtitle">
+            Calculate your pace for your next run session
+        </p>
+
+        </div>
+    </section>
+
+    <div class="container is-fluid mx-6">
+        <div class="description mt-4">
+            <p>
+            This is a tool to help you calculate the correct pace for your running session. 
+            Often, you know what your desired pace is for a kilometre. This tool will then translate this pace into your interval length of interest.
+            </p>
+        </div>
+
+        <hr>
+
+        <div class="pace_input">
+            <label for="pace">Please enter your desired pace (mm:ss per kilometre):
+                <input type="time" id="pace" name="pace" min="02:00" max="10:00" required="required"></input>
+            </label>
+        </div>
+
+        <div class="unit_input">
+            <label for="unit_choice">Please choose a unit: 
+                <select name="unit" id="unit_choice">
+                    <option value="metres">metres</option>
+                    <option value="kilometres">kilometres</option>
+                </select>
+            </label>
+        </div>
+
+        <datalist id="freq_repLengths">
+            <option value="200"></option>
+            <option value="400"></option>
+            <option value="600"></option>
+            <option value="800"></option>
+            <option value="1.2"></option>
+            <option value="1.5"></option>
+        </datalist>
+
+        <div class="repLength">
+            <label for="repLength">Please enter the rep length: 
+                <input id="repLength" type="text" name="repLength" list="freq_repLengths" onblur="validateRep()" value="400" required/>
+            </label>
+        </div>
+
+        <div class="user_submit mt-4">
+            <input type="button" class="button is-info" value="Calculate" onclick="process()"/>
+        </div>
+
+        <div class="final mt-4">
+            <p id="final_pace"></p>
+        </div>
+    </div>
+
+</body>
+</html>
